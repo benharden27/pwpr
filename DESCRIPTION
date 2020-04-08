@@ -3,7 +3,7 @@ Type: Package
 Title: Price Weller Pinkel Ocean Mixed Layer Model
 Version: 0.1.0
 Authors@R: person("Ben", "Harden", email = "bharden@sea.edu", role = c("aut", "cre"))
-Description: An R implementation of the Price Weller Pinkel ocean mixed layer model. It was translated from the original MATLAB code (Peter Lazarevich and Scott Stoermer, 2001) incorporating additional ideas from the python version (Earle Wilson, 2016).
+Description: An R implementation of the Price Weller Pinkel ocean mixed layer model described in JGR 91, C7 8411-8427, 1986 (PWP). It was translated from the MATLAB code (Peter Lazarevich and Scott Stoermer, 2001) incorporating additional ideas from the python version (Earle Wilson, 2016).
 License: MIT
 Encoding: UTF-8
 LazyData: true
