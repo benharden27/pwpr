@@ -470,7 +470,7 @@ end
 
 % -------------------------------------------------------------------------
 
-
+% TEST COMMENT
 function bulk_mix(ml_index)
 
 global g rb
