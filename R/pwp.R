@@ -200,3 +200,5 @@ z2b1 <- z2 / beta1
 z1b2 <- z1 / beta2
 z2b2 <- z2 / beta2
 absrb <- (rs1 * (exp(-z1b1) - exp(-z2b1) + rs2 * (exp(-z1b2) - exp(-z2b2)))
+
+#plz work
