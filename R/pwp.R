@@ -18,8 +18,8 @@ library(oce)
 #beta1:   longwave extinction coefficient (0.6 m)
 #beta2:   shortwave extinction coefficient (20 m)
 
-dt <- 900
-dz <- 10
+pwp <- function(met_input_file, profile_input_file,
+                dt = 900, dz = 10) {
 days <- 300
 depth <- 1000
 dt_save <- 4
@@ -105,6 +105,9 @@ pwp_output$s <- []
 pwp_output$d <- []
 pwp_output$u <- []
 pwp_output$v <- []
+
+return(pwp_output)
+}
 
 # Step through the PWP model
 
