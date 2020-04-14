@@ -311,23 +311,42 @@ rot <- function(ang){
 
 # ---------------------------------------------------------------
 
-# function absrb = absorb(beta1,beta2)
+remove_si <- function{
 
-# Compute solar radiation absorbtion profile. This subroutine
-# assumes two wavelengths, and a double exponential depth for absorbtion
+  # Find and relieve static instability that may occur in the
+  # density array d. This simulates free convection.
+  # ml_index is the index of the depth of the surface mixed layer
+  # after adjustment
 
-# Subscript 1 is for red, non-penetrating light, and 2 is for blue,
-# penetrating light. rsl is the funcion assumed to be red
+  while (1){
+    ml_index <- min(which(diff(d) < 0))
+    if (is.empty.model(ml_index)){
+      break
+    }
+    mix5(ml_index + 1)
+  }
+}
 
-rs1 <- 0.6
-rs2 <- 1.0 - rs1
-absrb <- rep(0,nz)
-z1 <- (0:nz-1) * dz
-z2 <- z1 + dz
-z1b1 <- z1 / beta1
-z2b1 <- z2 / beta1
-z1b2 <- z1 / beta2
-z2b2 <- z2 / beta2
-absrb <- (rs1 * (exp(-z1b1) - exp(-z2b1) + rs2 * (exp(-z1b2) - exp(-z2b2)))
+# ---------------------------------------------------------------
 
-#plz work
+absrb <- function(beta1, beta2){
+
+  # Compute solar radiation absorbtion profile. This subroutine
+  # assumes two wavelengths, and a double exponential depth for absorbtion
+
+  # Subscript 1 is for red, non-penetrating light, and 2 is for blue,
+  # penetrating light. rsl is the funcion assumed to be red
+
+  rs1 <- 0.6
+  rs2 <- 1.0 - rs1
+  absrb <- rep(0,nz)
+  z1 <- (0:nz-1) * dz
+  z2 <- z1 + dz
+  z1b1 <- z1 / beta1
+  z2b1 <- z2 / beta1
+  z1b2 <- z1 / beta2
+  z2b2 <- z2 / beta2
+  absrb <- (rs1 * (exp(-z1b1) - exp(-z2b1) + rs2 * (exp(-z1b2) - exp(-z2b2)))
+}
+
+
