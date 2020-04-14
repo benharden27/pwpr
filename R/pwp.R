@@ -287,12 +287,27 @@ stir <- function(rc,r,j){
 
 # ----------------------------------------------------------------------
 
-# function rot(ang)
-# This subroutine rotates the vector (u,v) through an angle, ang
+mix5 <- function(j){
 
-r <- (u + i * v) * exp (i * ang)
-u <- real(r)
-v <- imag(r)
+  # This subroutine mixes the arrays t, s, u, v down to level j
+
+  t[1:j] <- mean(t[1:j])
+  s[1:j] <- mean(s[1:j])
+  d[1:j] <- swSigma(s[1:j], t[1:j])
+  u[1:j] <- mean(u[1:j])
+  v[1:j] <- mean(v[1:j])
+}
+
+# ------------------------------------------------------------------
+
+rot <- function(ang){
+
+  # This subroutine rotates the vector (u,v) through an angle, ang
+
+  r <- (u + i * v) * exp (i * ang)
+  u <- real(r)
+  v <- imag(r)
+}
 
 # ---------------------------------------------------------------
 
