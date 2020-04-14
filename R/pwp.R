@@ -255,6 +255,38 @@ grad_mix <- function{
 }
 
 # ------------------------------------------------------------------------
+
+stir <- function(rc,r,j){
+
+  # This subroutine mixes cells j and j+1 just enough so that
+  # the Richardson Number after the mixing is brought up to
+  # the value rnew. In order to have this mixing process converge,
+  # rnew must exceed the critical value of the Richardson number where
+  # mixing is presumed to start. If r critical <- rc <- 0.25 (the nominal value)
+  # and r <- 0.20, then
+  # rnew <- 0.3 would be reasonable. If r were smaller, then a
+  # larger value of rnew - rc is used to hasten convergence.
+
+  rcon <- 0.02 + (rc - r) / 2
+  rnew <- rc + rcon / 5
+  f <- 1 - r / rnew
+  dt <- (t[j + 1] - t[j]) * f / 2
+  t[j + 1] <- t[j + 1] - dt
+  t[j] <- t[j] + dt
+  ds <- (s[j + 1] - s[j]) * f / 2
+  s[j + 1] <- s[j + 1] - ds
+  s[j] <- s[j] + ds
+  d[j:j + 1] <- swSigma(s[j:j + 1], t[j:j + 1])
+  du <- (u[j +1] - u[j]) * f / 2
+  u[j + 1] <- u[j + 1] - du
+  u[j] <- u[j] + du
+  dv <- (v[j + 1] - v[j]) * f / 2
+  v[j +1] <- v[j + 1] - dv
+  v[j] <- v[j] + dv
+}
+
+# ----------------------------------------------------------------------
+
 # function rot(ang)
 # This subroutine rotates the vector (u,v) through an angle, ang
 
