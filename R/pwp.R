@@ -174,6 +174,16 @@ rot(ang)
 
 # Do the bulk Richardson number instability form of mixing (as in PWP)
 
+if (rb > 1E-5){
+  bulk_mix(ml_index)
+}
+
+# Do the gradient Richardson number instability form of mixing
+
+if (rg > 0){
+  grad_mix
+}
+
 # --------------------------------------------------------------
 
 bulk_mix <- function(ml_index){
