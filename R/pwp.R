@@ -176,6 +176,26 @@ rot(ang)
 
 # --------------------------------------------------------------
 
+bulk_mix <- function(ml_index){
+  rvc <- rb
+  for (j <- ml_index +1 :nz){
+    h <- z[j]
+    dd <- (d[j] - d[1]) / d[1]
+    dv <- (u[j] - u[1])^2 + (v[j] - v[1])^2
+    if (dv <- 0){
+      rv <- Inf
+    } else {
+      rv <- g * h * dd / dv
+    }
+    if (rv > rvc){
+      break
+    } else {
+      mix5[j]
+    }
+  }
+}
+
+# ----------------------------------------------------------------
 # function rot(ang)
 # This subroutine rotates the vector (u,v) through an angle, ang
 
