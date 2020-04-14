@@ -196,6 +196,65 @@ bulk_mix <- function(ml_index){
 }
 
 # ----------------------------------------------------------------
+
+grad_mix <- function{
+
+  # This function performs the gradient Richardson Number relaxation
+  # by mixing adjacent cells just enough to bring them to a new
+  # Richardson Number
+
+  rc <- rg
+
+  # Compute the gradient Richardson Number, taking care to avoid dividing by
+  # zero in the mixed layer. The numerical values of the minimum allowable
+  # density and velocity differences are entirely arbitrary, and should not
+  # effect the calculations (except that on some occasions they evidently have)
+
+  j1 <- 1
+  j2 <- nz - 1
+
+  while (1){
+    for (j <- j1:j2){
+      if (j <= 0){
+        keyboard
+      }
+      dd <- (d[j + 1] - d[j]) / d[j]
+      dv <- (u[j + 1] - u[j])^2 + (v[j + 1] - v[j])^2
+      if (dv <- 0){
+        r[j] <- Inf
+      } else {
+        r[j] <- g * dz * dd / dv
+      }
+    }
+    # Find the smallest value of r in profile
+
+    rs <- min(r)
+    js <- min(which(r <- s))
+
+    # Check to see whether the smallest r is critical or not
+
+    if (rs > rc){
+      return
+    }
+
+    # Mix the cells js and js+1 that had the smallest Richardson Number
+
+    stir(rc, rs, js) #IDK WHAT STIR IS IN R?
+
+    # Recompute the Richardson Number over the part of the profile that has changed
+
+    j1 <- js - 2
+    if (j1 < 1){
+      j1 <- 1
+    }
+    j2 <- js + 2
+    if (j2 > nz - 1){
+      j2 <- nz - 1
+    }
+  }
+}
+
+# ------------------------------------------------------------------------
 # function rot(ang)
 # This subroutine rotates the vector (u,v) through an angle, ang
 
