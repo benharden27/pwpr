@@ -1,194 +1,209 @@
-# Load libraries
-library(tidyverse)
-library(oce)
-
-# Initialize the user-defined variables
-
-# dt:   time-step increment (seconds)
-# dz:   depth increment (meters)
-# days:   the number of days to run
-#depth:   the depth to run
-#dt_save:   time-step increment for saving to file (multiples of dt)
-#lat:   latitude (degrees)
-#g:   gravity (9.8 m/s^2)
-#cpw:   specific heat of water (4183.3 J/kgC)
-#rb:  critical bulk richardson number (0.65)
-#rg:  critical gradient richardson number (0.25)
-#rkz:   background diffusion (0)
-#beta1:   longwave extinction coefficient (0.6 m)
-#beta2:   shortwave extinction coefficient (20 m)
-
+#' Main PWP Program
+#'
+#' @param met_input_file
+#' @param profile_input_file
+#' @param dt time-step increment (seconds)
+#' @param dz depth increment (meters)
+#' @param days the number of days to run
+#' @param depth the depth to run
+#' @param dt_save time-step increment for saving to file (multiples of dt)
+#' @param lat latitude (degrees)
+#' @param rb critical bulk richardson number
+#' @param rg critical gradient richardson number
+#' @param rkz background diffusion
+#' @param beta1 longwave extinction coefficient (m)
+#' @param beta2 shortwave extinction coefficient (m)
+#'
+#' @return
+#' @export
+#'
+#' @examples
 pwp <- function(met_input_file, profile_input_file,
-                dt = 900, dz = 10) {
-days <- 300
-depth <- 1000
-dt_save <- 4
-lat <- 60
-g <- 9.8
-cpw <- 4183.3
-rb <- 0.65
-rg <- 0.25
-rkz <- 0
-beta1 <- 0.6
-beta2 <- 20
+                dt = 900, dz = 10, days = 300, depth = 1000, dt_save = 4,
+                lat = 60, rb = 0.64, rg = 0.25, rkz = 0,
+                beta1 = 0.6, beta2 = 20) {
 
-# Initialize additional variables
+  # Setup additional variables
+  g <- 9.81
+  cpw	<- 4183.3
+  f <- 2 * 7.29E-5 * sin(lat * pi / 180)
 
-#f: coriolis parameter
-#ucon: coefficient of inertial-internal wave dissipation
+  # Format air-sea flux data --------------------------------------------------
 
-f <- 2 * 7.29E-5 * sin(lat * pi / 180)
+  # Load air-sea forcing data from csv file
+  met <- read.csv(met_input_file)
 
-# Format air-sea flux data --------------------------------------------------
+  # Interpolate the air/sea flux variables at dt resolution
+  # Set nmet equal to the number of time increments using a resolution of dt
 
-# Load air-sea forcing data from csv file
-met <- read_csv()
+  nmet <- days * 8.64E4 / dt
+  time <- met$time[1] + 0:(nmet-1) * dt / 8.64E4
 
-# Interpolate the air/sea flux variables at dt resolution
-# Set nmet equal to the number of time increments using a resolution of dt
+  qi <- approx(met$time, met$sw, time)
+  qo <- approx(met$time, met$lw + met$qlat + met$qsens, time)
+  tx <- approx(met$time, met$tx, time)
+  ty <- approx(met$time, met$ty, time)
+  precip <- approx(met$time, met$precip, time)
 
-nmet <- days * 8.64E4 / dt
-time <- met$time[1] + 0:(nmet-1) * dt / 8.64E4
-
-qi <- approx(met$time, met$sw, time)
-qo <- approx(met$time, met$lw + met$qlat + met$qsens, time)
-tx <- approx(met$time, met$tx, time)
-ty <- approx(met$time, met$ty, time)
-precip <- approx(met$time, met$precip, time)
-
-# Interpolate evaporation minus precipitation at dt resolution
-evap <- 0.03456 * approx(met$time, met$qlat, time) / (86400 * 1000)
-emp <- evap - precip
+  # Interpolate evaporation minus precipitation at dt resolution
+  evap <- 0.03456 * approx(met$time, met$qlat, time) / (86400 * 1000)
+  emp <- evap - precip
 
 
-# Format profile data -------------------------------------------------------
+  # Format profile data -------------------------------------------------------
 
-# load profile data from csv file
-prof <- read.csv()
+  # load profile data from csv file
+  prof <- read.csv(profile_input_file)
 
-# Interpolate the profile variables at dz resolution
-# Set nz equal to the number of depth increments + 1 using a resolution of dz
+  # Interpolate the profile variables at dz resolution
+  # Set nz equal to the number of depth increments + 1 using a resolution of dz
 
-nz <- 1 + depth/dz
-z <- 0:(nz - 1) * dz
+  nz <- 1 + depth/dz
+  z <- 0:(nz - 1) * dz
 
-t <- approx(prof$z, prof$t, z)
-s <- approx(prof$z, prof$s, z)
-d <- swSigma(s,t)
+  t <- approx(prof$z, prof$t, z)
+  s <- approx(prof$z, prof$s, z)
+  d <- oce::swSigma(s,t)
 
-# Initialize additional profile variables at dz resolutions
+  # Initialize additional profile variables at dz resolutions
 
-#u and v:   east and north current
-#absrb:   absorbtion factor
+  #u and v:   east and north current
+  #absrb:   absorbtion factor
 
-u <- rep(0,nz)
-v <- rep(0,nz)
-absrb <- absorb(beta1,beta2)
+  u <- rep(0,nz)
+  v <- rep(0,nz)
+  absrb <- absorb(beta1,beta2)
 
-# Specify a simple "background" diffusion to be applied to the profiles
+  # Specify a simple "background" diffusion to be applied to the profiles
 
-dstab <- dt * rkz / dz^2
+  dstab <- dt * rkz / dz^2
 
-if (dstab > 0.5){
-  disp('Warning, this value of rkz will be unstable')
-}
+  if (dstab > 0.5){
+    disp('Warning, this value of rkz will be unstable')
+  }
 
-# Define the variables to be saved
+  # Define the variables to be passes into pwp routine that will change at each time step
+  pwp_in <- list(time = 0,
+                 t = t,
+                 s = s,
+                 d = d,
+                 u = u,
+                 v = v)
 
-pwp_output$dt <- dt
-pwp_output$dz <- dz
-pwp_output$lat <- lat
-pwp_output$z <- z
-pwp_output$time <- []
-pwp_output$t <- []
-pwp_output$s <- []
-pwp_output$d <- []
-pwp_output$u <- []
-pwp_output$v <- []
+  # save these as the first instance of pwp_output
+  pwp_output <- pwp_in
 
-return(pwp_output)
-}
+  # set up list of params to pass to pwpgo
+  # Get all variables in the envrionemtns
+  defined_vars <- ls(envir = environment())
+  # remove those that are already named in pwp_in
+  defined_vars <- defined_vars[defined_vars %in% names(pwp_in)]
+  # put all these variables in a list
+  params <- mget(defined_vars)
 
-# Step through the PWP model
 
-disp(['STATUS (out of' int2str(nmet)' steps):'])
+  # Enter the PWP time loop -------------------------------------------------
 
-for m = 1:nmet
+  for (m in 1:nmet) {
 
-# ------------------------------------------------------------
+    pwp_in <- pwpgo(pwp_in,params, m)
 
-# Apply heat and fresh water fluxes to the top most grid cell
+    if (m %% dt_save == 0) {
+      pwp_output$time <- append(pwp_output$time, pwp_out$time)
+      pwp_output$t <-  cbind(pwp_output$t, pwp_out$t)
+      pwp_output$s <-  cbind(pwp_output$s, pwp_out$s)
+      pwp_output$d <-  cbind(pwp_output$d, pwp_out$d)
+      pwp_output$u <-  cbind(pwp_output$u, pwp_out$u)
+      pwp_output$v <-  cbind(pwp_output$v, pwp_out$v)
+    }
 
-t[1] <- t[1] + (qi * absrb[1] - qo) * dt / (dz * d[1] * cpw)
-s[1] <- s[1] / (1 - emp * dt/ dz)
 
-# Absorb solar radiation at depth
+  }
 
-t[2:nz] <- t[2:nz] + qi * absrb[2:nz] * dt / (dz * d[2:nz] *cpw)
+  return(pwp_output)
 
-# Compute the density, and relieve static instability, if it occurs
+  }
 
-d <- swSigma(s,t)
 
-# remove_si ? function was here
+pwpgo <- function(pwp_in,params,m) {
+  # ------------------------------------------------------------
+  # Unpack variable lists into function environment
+  # Does the same thing as the global calls in MATLAB scripts
+  list2env(pwp_in, env = environment())
+  list2env(params, env = environment())
 
-# At this point the density profile should be statically stable
+  # Apply heat and fresh water fluxes to the top most grid cell
+  t[1] <- t[1] + (qi * absrb[1] - qo) * dt / (dz * d[1] * cpw)
+  s[1] <- s[1] / (1 - emp * dt/ dz)
 
-# Find the index of the surfaced mixed-layer right after the heat/salt fluxes
+  # Absorb solar radiation at depth
 
-ml_index <- min(which(diff(d) > 1E-4))
+  t[2:nz] <- t[2:nz] + qi * absrb[2:nz] * dt / (dz * d[2:nz] *cpw)
 
-# Get the depth of the surfaced mixed-layer
+  # Compute the density, and relieve static instability, if it occurs
 
-ml_depth <- z[ml_index + 1]
+  d <- swSigma(s,t)
 
-# Time step the momentum equation
+  # remove_si ? function was here
 
-# Rotate the current throughout the water column through an
-# angle equal to inertial rotation for half of a time step
+  # At this point the density profile should be statically stable
 
-ang <- -f * dt / 2
+  # Find the index of the surfaced mixed-layer right after the heat/salt fluxes
 
-rot(ang)
+  ml_index <- min(which(diff(d) > 1E-4))
 
-# Apply the wind stress to the mixed layer as it now exists
+  # Get the depth of the surfaced mixed-layer
 
-du <- (tx / (ml_depth * d[1])) * dt
-dv <- (ty / (ml_depth * d[1])) * dt
-u[1:ml_index] <- u[1:ml_index] + du
-v[1:ml_index] <- v[1:ml_index] + dv
+  ml_depth <- z[ml_index + 1]
 
-# Apply drag to the current (this is a horrible parameterization of
-# inertial-internal wave dispersion)
+  # Time step the momentum equation
 
-if (ucon > 1E-10){
-  u <- u * (1 - dt * ucon)
-  v <- v * (1 - dt * ucon)
-}
+  # Rotate the current throughout the water column through an
+  # angle equal to inertial rotation for half of a time step
 
-# Rotate another half time step
+  ang <- -f * dt / 2
 
-rot(ang)
+  rot(ang)
 
-# Finished with the momentum equation for this time step
+  # Apply the wind stress to the mixed layer as it now exists
 
-# Do the bulk Richardson number instability form of mixing (as in PWP)
+  du <- (tx / (ml_depth * d[1])) * dt
+  dv <- (ty / (ml_depth * d[1])) * dt
+  u[1:ml_index] <- u[1:ml_index] + du
+  v[1:ml_index] <- v[1:ml_index] + dv
 
-if (rb > 1E-5){
-  bulk_mix(ml_index)
-}
+  # Apply drag to the current (this is a horrible parameterization of
+  # inertial-internal wave dispersion)
 
-# Do the gradient Richardson number instability form of mixing
+  if (ucon > 1E-10){
+    u <- u * (1 - dt * ucon)
+    v <- v * (1 - dt * ucon)
+  }
 
-if (rg > 0){
-  grad_mix
+  # Rotate another half time step
+
+  rot(ang)
+
+  # Finished with the momentum equation for this time step
+
+  # Do the bulk Richardson number instability form of mixing (as in PWP)
+
+  if (rb > 1E-5){
+    bulk_mix(ml_index)
+  }
+
+  # Do the gradient Richardson number instability form of mixing
+
+  if (rg > 0){
+    grad_mix
+  }
 }
 
 # --------------------------------------------------------------
 
-bulk_mix <- function(ml_index){
+bulk_mix <- function(ml_index) {
   rvc <- rb
-  for (j <- ml_index +1 :nz){
+  for (j in ml_index +1 :nz){
     h <- z[j]
     dd <- (d[j] - d[1]) / d[1]
     dv <- (u[j] - u[1])^2 + (v[j] - v[1])^2
@@ -207,7 +222,7 @@ bulk_mix <- function(ml_index){
 
 # ----------------------------------------------------------------
 
-grad_mix <- function{
+grad_mix <- function({
 
   # This function performs the gradient Richardson Number relaxation
   # by mixing adjacent cells just enough to bring them to a new
