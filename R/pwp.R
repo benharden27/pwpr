@@ -123,6 +123,16 @@ pwp <- function(met_input_file, profile_input_file,
   }
 
 
+#' Run one loop of the PWP program
+#'
+#' @param pwp_in list of pwp input variables that will change through loop
+#' @param params List of constants that will stay the same through loop
+#' @param m particular time step index
+#'
+#' @return
+#' @export
+#'
+#' @examples
 pwpgo <- function(pwp_in, params, m) {
   # ------------------------------------------------------------
   # Unpack variable lists into function environment
