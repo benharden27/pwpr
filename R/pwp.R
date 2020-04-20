@@ -1,7 +1,7 @@
 #' Main PWP Program
 #'
-#' @param met_input_file
-#' @param profile_input_file
+#' @param met_input_file Input metereological data
+#' @param profile_input_file Input profile data
 #' @param dt time-step increment (seconds)
 #' @param dz depth increment (meters)
 #' @param days the number of days to run
@@ -39,16 +39,15 @@ pwp <- function(met_input_file, profile_input_file,
   nmet <- days * 8.64E4 / dt
   time <- met$time[1] + 0:(nmet-1) * dt / 8.64E4
 
-  qi <- approx(met$time, met$sw, time)
-  qo <- approx(met$time, met$lw + met$qlat + met$qsens, time)
-  tx <- approx(met$time, met$tx, time)
-  ty <- approx(met$time, met$ty, time)
-  precip <- approx(met$time, met$precip, time)
+  qi <- approx(met$time, met$sw, time)$y
+  qo <- approx(met$time, met$lw + met$qlat + met$qsens, time)$y
+  tx <- approx(met$time, met$tx, time)$y
+  ty <- approx(met$time, met$ty, time)$y
+  precip <- approx(met$time, met$precip, time)$y
 
   # Interpolate evaporation minus precipitation at dt resolution
-  evap <- 0.03456 * approx(met$time, met$qlat, time) / (86400 * 1000)
+  evap <- 0.03456 * approx(met$time, met$qlat, time)$y / (86400 * 1000)
   emp <- evap - precip
-
 
   # Format profile data -------------------------------------------------------
 
@@ -61,9 +60,9 @@ pwp <- function(met_input_file, profile_input_file,
   nz <- 1 + depth/dz
   z <- 0:(nz - 1) * dz
 
-  t <- approx(prof$z, prof$t, z)
-  s <- approx(prof$z, prof$s, z)
-  d <- oce::swSigma(s,t)
+  t <- approx(prof$z, prof$t, z, rule = 2)$y
+  s <- approx(prof$z, prof$s, z, rule = 2)$y
+  d <- oce::swSigma(s, t, p = 0)
 
   # Initialize additional profile variables at dz resolutions
 
@@ -97,13 +96,12 @@ pwp <- function(met_input_file, profile_input_file,
   # Get all variables in the envrionemtns
   defined_vars <- ls(envir = environment())
   # remove those that are already named in pwp_in
-  defined_vars <- defined_vars[defined_vars %in% names(pwp_in)]
+  defined_vars <- defined_vars[!(defined_vars %in% names(pwp_in))]
   # put all these variables in a list
   params <- mget(defined_vars)
 
 
   # Enter the PWP time loop -------------------------------------------------
-
   for (m in 1:nmet) {
 
     pwp_in <- pwpgo(pwp_in,params, m)
@@ -125,7 +123,7 @@ pwp <- function(met_input_file, profile_input_file,
   }
 
 
-pwpgo <- function(pwp_in,params,m) {
+pwpgo <- function(pwp_in, params, m) {
   # ------------------------------------------------------------
   # Unpack variable lists into function environment
   # Does the same thing as the global calls in MATLAB scripts
@@ -142,7 +140,7 @@ pwpgo <- function(pwp_in,params,m) {
 
   # Compute the density, and relieve static instability, if it occurs
 
-  d <- swSigma(s,t)
+  d <- oce::swSigma(s,t)
 
   # remove_si ? function was here
 
@@ -222,7 +220,7 @@ bulk_mix <- function(ml_index) {
 
 # ----------------------------------------------------------------
 
-grad_mix <- function({
+grad_mix <- function(){
 
   # This function performs the gradient Richardson Number relaxation
   # by mixing adjacent cells just enough to bring them to a new
@@ -239,7 +237,7 @@ grad_mix <- function({
   j2 <- nz - 1
 
   while (1){
-    for (j <- j1:j2){
+    for (j in j1:j2){
       if (j <= 0){
         keyboard
       }
@@ -336,7 +334,7 @@ rot <- function(ang){
 
 # ---------------------------------------------------------------
 
-remove_si <- function{
+remove_si <- function(){
 
   # Find and relieve static instability that may occur in the
   # density array d. This simulates free convection.
@@ -354,7 +352,7 @@ remove_si <- function{
 
 # ---------------------------------------------------------------
 
-absrb <- function(beta1, beta2){
+absorb <- function(beta1, beta2){
 
   # Compute solar radiation absorbtion profile. This subroutine
   # assumes two wavelengths, and a double exponential depth for absorbtion
@@ -371,7 +369,7 @@ absrb <- function(beta1, beta2){
   z2b1 <- z2 / beta1
   z1b2 <- z1 / beta2
   z2b2 <- z2 / beta2
-  absrb <- (rs1 * (exp(-z1b1) - exp(-z2b1) + rs2 * (exp(-z1b2) - exp(-z2b2)))
+  absrb <- (rs1 * (exp(-z1b1) - exp(-z2b1) + rs2 * (exp(-z1b2) - exp(-z2b2))))
 }
 
 
