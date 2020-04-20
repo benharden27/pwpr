@@ -6,7 +6,7 @@ library(seapacific)
 
 # t is in days
 nx = 100
-df <- tibble(t = seq(0,nx-1,1),
+df <- tibble(time = seq(0,nx-1,1),
                  sw = runif(100,0,1000),
                  lw = runif(100,0,1000),
                  qlat = runif(100,0,1000),
