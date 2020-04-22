@@ -150,7 +150,7 @@ pwpgo <- function(pwp_in, params, m) {
 
   # Compute the density, and relieve static instability, if it occurs
 
-  d <- oce::swSigma(s,t)
+  d <- oce::swSigma(s,t, p=0)
 
   # remove_si ? function was here
 
@@ -337,9 +337,9 @@ rot <- function(ang){
 
   # This subroutine rotates the vector (u,v) through an angle, ang
 
-  r <- (u + i * v) * exp (i * ang)
-  u <- real(r)
-  v <- imag(r)
+  r <-complex(1,u,v) * exp(complex(0,0,1) * ang)
+  u <- Re(r)
+  v <- Im(r)
 }
 
 # ---------------------------------------------------------------
