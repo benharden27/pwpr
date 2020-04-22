@@ -223,7 +223,7 @@ bulk_mix <- function(ml_index) {
     if (rv > rvc){
       break
     } else {
-      mix5[j]
+      mix5(j)
     }
   }
 }
