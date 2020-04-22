@@ -209,6 +209,14 @@ pwpgo <- function(pwp_in, params, m) {
 
 # --------------------------------------------------------------
 
+#' bulk_mix
+#'
+#' @param ml_index the index of the depth of the surface mixed layer after adjustment
+#'
+#' @return
+#' @export
+#'
+#' @examples
 bulk_mix <- function(ml_index) {
   rvc <- rb
   for (j in ml_index +1 :nz){
@@ -230,6 +238,12 @@ bulk_mix <- function(ml_index) {
 
 # ----------------------------------------------------------------
 
+#' grad_mix
+#'
+#' @return
+#' @export
+#'
+#' @examples
 grad_mix <- function(){
 
   # This function performs the gradient Richardson Number relaxation
@@ -289,6 +303,16 @@ grad_mix <- function(){
 
 # ------------------------------------------------------------------------
 
+#' stir
+#'
+#' @param rc
+#' @param r
+#' @param j
+#'
+#' @return
+#' @export
+#'
+#' @examples
 stir <- function(rc,r,j){
 
   # This subroutine mixes cells j and j+1 just enough so that
@@ -320,6 +344,14 @@ stir <- function(rc,r,j){
 
 # ----------------------------------------------------------------------
 
+#' mix5
+#'
+#' @param j
+#'
+#' @return
+#' @export
+#'
+#' @examples
 mix5 <- function(j){
 
   # This subroutine mixes the arrays t, s, u, v down to level j
@@ -333,6 +365,14 @@ mix5 <- function(j){
 
 # ------------------------------------------------------------------
 
+#' rot
+#'
+#' @param ang the angle the vector is rotated about
+#'
+#' @return
+#' @export
+#'
+#' @examples
 rot <- function(ang){
 
   # This subroutine rotates the vector (u,v) through an angle, ang
@@ -344,6 +384,12 @@ rot <- function(ang){
 
 # ---------------------------------------------------------------
 
+#' remove_si
+#'
+#' @return
+#' @export
+#'
+#' @examples
 remove_si <- function(){
 
   # Find and relieve static instability that may occur in the
@@ -362,6 +408,15 @@ remove_si <- function(){
 
 # ---------------------------------------------------------------
 
+#' abosorb
+#'
+#' @param beta1 longwave extinction coefficient (m)
+#' @param beta2 shortwave extinction coefficient (m)
+#'
+#' @return
+#' @export
+#'
+#' @examples
 absorb <- function(beta1, beta2){
 
   # Compute solar radiation absorbtion profile. This subroutine
