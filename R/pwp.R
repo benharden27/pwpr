@@ -212,7 +212,12 @@ pwpgo <- function(pwp_in, params, m) {
   # Do the gradient Richardson number instability form of mixing
 
   if (rg > 0){
-    grad_mix
+    gm <- grad_mix(rg, nz, d, u, v , g, dz, t, s)
+    t <- gm$t
+    s <- gm$s
+    d <- gm$d
+    u <- gm$u
+    v <- gm$v
   }
 
   # MAKE SURE WE ADD A RETURN FUNCTION
@@ -297,6 +302,7 @@ grad_mix <- function(rg, nz, d, u, v , g, dz, t, s){
   j2 <- nz - 1
 
   while (1){
+    r <- rep(j1:j2) #DONT KNOW IF TRANSLATED CORRECTLY FROM r = zeros(size(j1:j2))
     for (j in j1:j2){
       if (j <= 0){
         keyboard
@@ -324,7 +330,7 @@ grad_mix <- function(rg, nz, d, u, v , g, dz, t, s){
 
     # MAKE SURE YOU CREATE AN OUTPUT FROM THE FUNCTION
     # LIKE WITH THE rot() FUNCTION
-    st <- stir(rc, rs, js)
+    st <- stir(rc, r, j, s, t, d, u, v)
     t <- st$t
     s <- st$s
     d <- st$d
@@ -342,6 +348,7 @@ grad_mix <- function(rg, nz, d, u, v , g, dz, t, s){
       j2 <- nz - 1
     }
   }
+  return(list(t=t, s=s, d=d, u=u, v=v))
 }
 
 # ------------------------------------------------------------------------
@@ -376,18 +383,18 @@ stir <- function(rc, r, j, s, t, d, u, v){
   rnew <- rc + rcon / 5
   f <- 1 - r / rnew
   dt <- (t[j + 1] - t[j]) * f / 2
-  t[j + 1] <- t[j + 1] - dt
-  t[j] <- t[j] + dt
+  t[j + 1] <- t[j + 1] - dt[m]
+  t[j] <- t[j] + dt[m]
   ds <- (s[j + 1] - s[j]) * f / 2
-  s[j + 1] <- s[j + 1] - ds
-  s[j] <- s[j] + ds
-  d[j:j + 1] <- swSigma(s[j:j + 1], t[j:j + 1])
+  s[j + 1] <- s[j + 1] - ds[m]
+  s[j] <- s[j] + ds[m]
+  d[j:j + 1] <- oce::swSigma(s[j:j + 1], t[j:j + 1], p=0)
   du <- (u[j +1] - u[j]) * f / 2
-  u[j + 1] <- u[j + 1] - du
-  u[j] <- u[j] + du
+  u[j + 1] <- u[j + 1] - du[m]
+  u[j] <- u[j] + du[m]
   dv <- (v[j + 1] - v[j]) * f / 2
-  v[j +1] <- v[j + 1] - dv
-  v[j] <- v[j] + dv
+  v[j +1] <- v[j + 1] - dv[m]
+  v[j] <- v[j] + dv[m]
 
   return(list(t = t, s = s, d = d, u = u, v = v))
 }
