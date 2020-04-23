@@ -182,6 +182,7 @@ pwpgo <- function(pwp_in, params, m) {
 
   # Apply drag to the current (this is a horrible parameterization of
   # inertial-internal wave dispersion)
+  # ucon is the coefficient of inertial-internal wave dissipation (0) s^-1
 
   if (ucon > 1E-10){
     u <- u * (1 - dt * ucon)
@@ -217,12 +218,21 @@ pwpgo <- function(pwp_in, params, m) {
 #' bulk_mix
 #'
 #' @param ml_index the index of the depth of the surface mixed layer after adjustment
+#' @param rb
+#' @param nz
+#' @param z
+#' @param d
+#' @param u
+#' @param v
+#' @param g
+#' @param t
+#' @param s
 #'
 #' @return
 #' @export
 #'
 #' @examples
-bulk_mix <- function(ml_index) {
+bulk_mix <- function(ml_index, rb, nz, z, d, u, v, g, t, s) {
   rvc <- rb
   for (j in ml_index +1 :nz){
     h <- z[j]
@@ -245,11 +255,21 @@ bulk_mix <- function(ml_index) {
 
 #' grad_mix
 #'
+#' @param rg
+#' @param nz
+#' @param d
+#' @param u
+#' @param v
+#' @param g
+#' @param dz
+#' @param t
+#' @param s
+#'
 #' @return
 #' @export
 #'
 #' @examples
-grad_mix <- function(){
+grad_mix <- function(rg, nz, d, u, v , g, dz, t, s){
 
   # This function performs the gradient Richardson Number relaxation
   # by mixing adjacent cells just enough to bring them to a new
@@ -315,12 +335,17 @@ grad_mix <- function(){
 #' @param rc
 #' @param r
 #' @param j
+#' @param s
+#' @param t
+#' @param d
+#' @param u
+#' @param v
 #'
 #' @return
 #' @export
 #'
 #' @examples
-stir <- function(rc,r,j){
+stir <- function(rc, r, j, s, t, d, u, v){
 
   # This subroutine mixes cells j and j+1 just enough so that
   # the Richardson Number after the mixing is brought up to
@@ -347,6 +372,8 @@ stir <- function(rc,r,j){
   dv <- (v[j + 1] - v[j]) * f / 2
   v[j +1] <- v[j + 1] - dv
   v[j] <- v[j] + dv
+
+  return(list(t = t, s = s, d = d, u = u, v = v))
 }
 
 # ----------------------------------------------------------------------
@@ -354,12 +381,17 @@ stir <- function(rc,r,j){
 #' mix5
 #'
 #' @param j
+#' @param t
+#' @param s
+#' @param d
+#' @param u
+#' @param v
 #'
 #' @return
 #' @export
 #'
 #' @examples
-mix5 <- function(j){
+mix5 <- function(j, t, s , d, u, v){
 
   # This subroutine mixes the arrays t, s, u, v down to level j
 
@@ -375,6 +407,8 @@ mix5 <- function(j){
 #' rot
 #'
 #' @param ang the angle the vector is rotated about
+#' @param u
+#' @param v
 #'
 #' @return
 #' @export
@@ -395,11 +429,17 @@ rot <- function(u,v,ang){
 
 #' remove_si
 #'
+#' @param t
+#' @param s
+#' @param d
+#' @param u
+#' @param v
+#'
 #' @return
 #' @export
 #'
 #' @examples
-remove_si <- function(){
+remove_si <- function(t, s, d, u, v){
 
   # Find and relieve static instability that may occur in the
   # density array d. This simulates free convection.
@@ -421,12 +461,14 @@ remove_si <- function(){
 #'
 #' @param beta1 longwave extinction coefficient (m)
 #' @param beta2 shortwave extinction coefficient (m)
+#' @param nz
+#' @param dz
 #'
 #' @return
 #' @export
 #'
 #' @examples
-absorb <- function(beta1, beta2){
+absorb <- function(beta1, beta2, nz, dz){
 
   # Compute solar radiation absorbtion profile. This subroutine
   # assumes two wavelengths, and a double exponential depth for absorbtion
