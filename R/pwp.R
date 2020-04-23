@@ -201,7 +201,12 @@ pwpgo <- function(pwp_in, params, m) {
 
   # ADD ALL VARIABLES TO bulk_mix function definition
   if (rb > 1E-5){
-    bulk_mix(ml_index)
+    bm <- bulk_mix(ml_index, rb, nz, z, d, u, v, g, t, s)
+    t <- bm$t
+    s <- bm$s
+    d <- bm$d
+    u <- bm$u
+    v <- bm$v
   }
 
   # Do the gradient Richardson number instability form of mixing
@@ -249,6 +254,7 @@ bulk_mix <- function(ml_index, rb, nz, z, d, u, v, g, t, s) {
       mix5(j)
     }
   }
+  return(list(t=t, s=s, d=d, u=u, v=v))
 }
 
 # ----------------------------------------------------------------
