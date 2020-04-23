@@ -27,6 +27,7 @@ pwp <- function(met_input_file, profile_input_file,
   g <- 9.81
   cpw	<- 4183.3
   f <- 2 * 7.29E-5 * sin(lat * pi / 180)
+  ucon <- 0.1*abs(f);
 
   # Format air-sea flux data --------------------------------------------------
 
@@ -141,12 +142,11 @@ pwpgo <- function(pwp_in, params, m) {
   list2env(params, env = environment())
 
   # Apply heat and fresh water fluxes to the top most grid cell
-  t[1] <- t[1] + (qi * absrb[1] - qo) * dt / (dz * d[1] * cpw)
-  s[1] <- s[1] / (1 - emp * dt/ dz)
+  t[1] <- t[1] + (qi[m] * absrb[1] - qo[m]) * dt / (dz * d[1] * cpw)
+  s[1] <- s[1] / (1 - emp[m] * dt/ dz)
 
   # Absorb solar radiation at depth
-
-  t[2:nz] <- t[2:nz] + qi * absrb[2:nz] * dt / (dz * d[2:nz] *cpw)
+  t[2:nz] <- t[2:nz] + qi[m] * absrb[2:nz] * dt / (dz * d[2:nz] *cpw)
 
   # Compute the density, and relieve static instability, if it occurs
 
@@ -157,11 +157,9 @@ pwpgo <- function(pwp_in, params, m) {
   # At this point the density profile should be statically stable
 
   # Find the index of the surfaced mixed-layer right after the heat/salt fluxes
-
   ml_index <- min(which(diff(d) > 1E-4))
 
   # Get the depth of the surfaced mixed-layer
-
   ml_depth <- z[ml_index + 1]
 
   # Time step the momentum equation
@@ -171,12 +169,14 @@ pwpgo <- function(pwp_in, params, m) {
 
   ang <- -f * dt / 2
 
-  rot(ang)
+  uv <- rot(u,v,ang)
+  u <- uv$u
+  v <- uv$v
 
   # Apply the wind stress to the mixed layer as it now exists
 
-  du <- (tx / (ml_depth * d[1])) * dt
-  dv <- (ty / (ml_depth * d[1])) * dt
+  du <- (tx[m] / (ml_depth * d[1])) * dt
+  dv <- (ty[m] / (ml_depth * d[1])) * dt
   u[1:ml_index] <- u[1:ml_index] + du
   v[1:ml_index] <- v[1:ml_index] + dv
 
@@ -189,13 +189,16 @@ pwpgo <- function(pwp_in, params, m) {
   }
 
   # Rotate another half time step
-
-  rot(ang)
+  # NEED TO CREATE OUTPUT FROM THIS FUNCTION
+  uv <- rot(u,v,ang)
+  u <- uv$u
+  v <- uv$v
 
   # Finished with the momentum equation for this time step
 
   # Do the bulk Richardson number instability form of mixing (as in PWP)
 
+  # ADD ALL VARIABLES TO bulk_mix function definition
   if (rb > 1E-5){
     bulk_mix(ml_index)
   }
@@ -205,6 +208,8 @@ pwpgo <- function(pwp_in, params, m) {
   if (rg > 0){
     grad_mix
   }
+
+  # MAKE SURE WE ADD A RETURN FUNCTION
 }
 
 # --------------------------------------------------------------
@@ -286,7 +291,9 @@ grad_mix <- function(){
 
     # Mix the cells js and js+1 that had the smallest Richardson Number
 
-    stir(rc, rs, js) #IDK WHAT STIR IS IN R?
+    # MAKE SURE YOU CREATE AN OUTPUT FROM THE FUNCTION
+    # LIKE WITH THE rot() FUNCTION
+    stir(rc, rs, js)
 
     # Recompute the Richardson Number over the part of the profile that has changed
 
@@ -373,13 +380,15 @@ mix5 <- function(j){
 #' @export
 #'
 #' @examples
-rot <- function(ang){
+rot <- function(u,v,ang){
 
   # This subroutine rotates the vector (u,v) through an angle, ang
 
   r <-complex(1,u,v) * exp(complex(0,0,1) * ang)
   u <- Re(r)
   v <- Im(r)
+
+  return(list(u = u, v = v))
 }
 
 # ---------------------------------------------------------------
@@ -408,7 +417,7 @@ remove_si <- function(){
 
 # ---------------------------------------------------------------
 
-#' abosorb
+#' absorb
 #'
 #' @param beta1 longwave extinction coefficient (m)
 #' @param beta2 shortwave extinction coefficient (m)
@@ -428,7 +437,7 @@ absorb <- function(beta1, beta2){
   rs1 <- 0.6
   rs2 <- 1.0 - rs1
   absrb <- rep(0,nz)
-  z1 <- (0:nz-1) * dz
+  z1 <- 0:(nz-1) * dz
   z2 <- z1 + dz
   z1b1 <- z1 / beta1
   z2b1 <- z2 / beta1
