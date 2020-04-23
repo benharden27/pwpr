@@ -313,7 +313,12 @@ grad_mix <- function(rg, nz, d, u, v , g, dz, t, s){
 
     # MAKE SURE YOU CREATE AN OUTPUT FROM THE FUNCTION
     # LIKE WITH THE rot() FUNCTION
-    stir(rc, rs, js)
+    st <- stir(rc, rs, js)
+    t <- st$t
+    s <- st$s
+    d <- st$d
+    u <- st$u
+    v <- st$v
 
     # Recompute the Richardson Number over the part of the profile that has changed
 
