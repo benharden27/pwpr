@@ -251,7 +251,12 @@ bulk_mix <- function(ml_index, rb, nz, z, d, u, v, g, t, s) {
     if (rv > rvc){
       break
     } else {
-      mix5(j)
+      mi <- mix5(j, t, s, d, u, v)
+      t <- mi$t
+      s <- mi$s
+      d <- mi$d
+      u <- mi$u
+      v <- mi$v
     }
   }
   return(list(t=t, s=s, d=d, u=u, v=v))
@@ -408,9 +413,11 @@ mix5 <- function(j, t, s , d, u, v){
 
   t[1:j] <- mean(t[1:j])
   s[1:j] <- mean(s[1:j])
-  d[1:j] <- swSigma(s[1:j], t[1:j])
+  d[1:j] <- oce::swSigma(s[1:j], t[1:j], p=0)
   u[1:j] <- mean(u[1:j])
   v[1:j] <- mean(v[1:j])
+
+  return(list(t=t, s=s, d=d, u=u, v=v))
 }
 
 # ------------------------------------------------------------------
