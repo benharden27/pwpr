@@ -72,7 +72,7 @@ pwp <- function(met_input_file, profile_input_file,
 
   u <- rep(0,nz)
   v <- rep(0,nz)
-  absrb <- absorb(beta1,beta2)
+  absrb <- absorb(beta1,beta2,nz,dz)
 
   # Specify a simple "background" diffusion to be applied to the profiles
 
@@ -244,7 +244,7 @@ pwpgo <- function(pwp_in, params, m) {
 #' @examples
 bulk_mix <- function(ml_index, rb, nz, z, d, u, v, g, t, s) {
   rvc <- rb
-  for (j in ml_index +1 :nz){
+  for (j in (ml_index+1):nz){
     h <- z[j]
     dd <- (d[j] - d[1]) / d[1]
     dv <- (u[j] - u[1])^2 + (v[j] - v[1])^2
@@ -302,7 +302,7 @@ grad_mix <- function(rg, nz, d, u, v , g, dz, t, s){
   j2 <- nz - 1
 
   while (1){
-    r <- rep(j1:j2) #DONT KNOW IF TRANSLATED CORRECTLY FROM r = zeros(size(j1:j2))
+    r <- rep(0,length(j1:j2)) #DONT KNOW IF TRANSLATED CORRECTLY FROM r = zeros(size(j1:j2))
     for (j in j1:j2){
       if (j <= 0){
         keyboard

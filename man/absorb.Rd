@@ -2,18 +2,20 @@
 % Please edit documentation in R/pwp.R
 \name{absorb}
 \alias{absorb}
-\title{abosorb}
+\title{absorb}
 \usage{
-absorb(beta1, beta2)
+absorb(beta1, beta2, nz, dz)
 }
 \arguments{
 \item{beta1}{longwave extinction coefficient (m)}
 
 \item{beta2}{shortwave extinction coefficient (m)}
+
+\item{dz}{}
 }
 \value{
 
 }
 \description{
-abosorb
+absorb
 }

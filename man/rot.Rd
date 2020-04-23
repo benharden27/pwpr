@@ -4,9 +4,11 @@
 \alias{rot}
 \title{rot}
 \usage{
-rot(ang)
+rot(u, v, ang)
 }
 \arguments{
+\item{v}{}
+
 \item{ang}{the angle the vector is rotated about}
 }
 \value{

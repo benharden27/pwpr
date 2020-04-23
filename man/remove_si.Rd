@@ -4,7 +4,10 @@
 \alias{remove_si}
 \title{remove_si}
 \usage{
-remove_si()
+remove_si(t, s, d, u, v)
+}
+\arguments{
+\item{v}{}
 }
 \value{
 

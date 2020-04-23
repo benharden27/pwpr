@@ -4,10 +4,10 @@
 \alias{mix5}
 \title{mix5}
 \usage{
-mix5(j)
+mix5(j, t, s, d, u, v)
 }
 \arguments{
-\item{j}{}
+\item{v}{}
 }
 \value{
 

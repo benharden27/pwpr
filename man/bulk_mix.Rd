@@ -4,10 +4,12 @@
 \alias{bulk_mix}
 \title{bulk_mix}
 \usage{
-bulk_mix(ml_index)
+bulk_mix(ml_index, rb, nz, z, d, u, v, g, t, s)
 }
 \arguments{
 \item{ml_index}{the index of the depth of the surface mixed layer after adjustment}
+
+\item{s}{}
 }
 \value{
 

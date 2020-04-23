@@ -4,7 +4,10 @@
 \alias{grad_mix}
 \title{grad_mix}
 \usage{
-grad_mix()
+grad_mix(rg, nz, d, u, v, g, dz, t, s)
+}
+\arguments{
+\item{s}{}
 }
 \value{
 

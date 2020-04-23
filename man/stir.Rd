@@ -4,10 +4,10 @@
 \alias{stir}
 \title{stir}
 \usage{
-stir(rc, r, j)
+stir(rc, r, j, s, t, d, u, v)
 }
 \arguments{
-\item{j}{}
+\item{v}{}
 }
 \value{
 
