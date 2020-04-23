@@ -1,0 +1,13 @@
+met_input_file <- "inst/extdata/met_input_file_test.csv"
+profile_input_file <- "inst/extdata/profile_input_file_test.csv"
+dt = 900
+dz = 10
+days = 300
+depth = 1000
+dt_save = 4
+lat = 60
+rb = 0.64
+rg = 0.25
+rkz = 0
+beta1 = 0.6
+beta2 = 20
