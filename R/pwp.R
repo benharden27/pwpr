@@ -478,6 +478,7 @@ remove_si <- function(t, s, d, u, v){
     }
     mix5(ml_index + 1)
   }
+  return(list(t=t, s=s, d=d, u=u, v=v))
 }
 
 # ---------------------------------------------------------------
