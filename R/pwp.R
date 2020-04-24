@@ -248,7 +248,7 @@ bulk_mix <- function(ml_index, rb, nz, z, d, u, v, g, t, s) {
     h <- z[j]
     dd <- (d[j] - d[1]) / d[1]
     dv <- (u[j] - u[1])^2 + (v[j] - v[1])^2
-    if (dv == 0){
+    if (is.na(dv)){
       rv <- Inf
     } else {
       rv <- g * h * dd / dv
@@ -309,7 +309,7 @@ grad_mix <- function(rg, nz, d, u, v , g, dz, t, s){
       }
       dd <- (d[j + 1] - d[j]) / d[j]
       dv <- (u[j + 1] - u[j])^2 + (v[j + 1] - v[j])^2
-      if (dv == 0){
+      if (is.na(dv)){
         r[j] <- Inf
       } else {
         r[j] <- g * dz * dd / dv
