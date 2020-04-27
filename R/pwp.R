@@ -318,12 +318,12 @@ grad_mix <- function(rg, nz, d, u, v , g, dz, t, s){
     # Find the smallest value of r in profile
 
     rs <- min(r)
-    js <- min(which(r == s))
+    js <- min(which(r == rs))
 
     # Check to see whether the smallest r is critical or not
 
     if (rs > rc){
-      return
+      return(list(t=t, s=s, d=d, u=u, v=v))
     }
 
     # Mix the cells js and js+1 that had the smallest Richardson Number
@@ -348,7 +348,7 @@ grad_mix <- function(rg, nz, d, u, v , g, dz, t, s){
       j2 <- nz - 1
     }
   }
-  return(list(t=t, s=s, d=d, u=u, v=v))
+
 }
 
 # ------------------------------------------------------------------------
