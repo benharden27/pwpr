@@ -7,13 +7,13 @@ library(seapacific)
 # t is in days
 nx = 100
 df <- tibble(time = seq(0,nx-1,1),
-                 sw = runif(100,0,1000),
-                 lw = runif(100,0,1000),
-                 qlat = runif(100,0,1000),
-                 qsens = runif(100,0,1000),
-                 tx = runif(100,0,1000),
-                 ty = runif(100,0,1000),
-                 precip = runif(100,0,1000)
+                 sw = runif(100,0,100),
+                 lw = runif(100,0,100),
+                 qlat = runif(100,0,100),
+                 qsens = runif(100,0,100),
+                 tx = runif(100,0,1),
+                 ty = runif(100,0,1),
+                 precip = runif(100,0,1)
                  )
 
 write_csv(df, "inst/extdata/met_input_file_test.csv")
