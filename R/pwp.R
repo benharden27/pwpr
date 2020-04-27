@@ -322,13 +322,8 @@ grad_mix <- function(rg, nz, d, u, v , g, dz, t, s){
 
     # Check to see whether the smallest r is critical or not
 
-<<<<<<< HEAD
     if (rs > rc){
       return(list(t=t, s=s, d=d, u=u, v=v))
-=======
-    if (is.na(rs) > is.na(rc)){
-      return
->>>>>>> 720a0cdd86e13b84e33d2d9e9730b5d46ed9d3b4
     }
 
     # Mix the cells js and js+1 that had the smallest Richardson Number
