@@ -18,6 +18,17 @@ df <- tibble(time = seq(0,nx-1,1),
 
 write_csv(df, "inst/extdata/met_input_file_test.csv")
 
+df <- tibble(time = seq(0,nx-1,1),
+             sw = 0,
+             lw = 50,
+             qlat = 0,
+             qsens = 0,
+             tx = 0,
+             ty = 0,
+             precip = 0
+)
+
+write_csv(df, "inst/extdata/met_input_file_test_2.csv")
 
 
 # Profile CSV -------------------------------------------------------------

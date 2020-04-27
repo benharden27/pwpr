@@ -83,14 +83,8 @@ pwp <- function(met_input_file, profile_input_file,
   }
 
   # Define the variables to be passes into pwp routine that will change at each time step
-  pwp_in <- list(time = 0,
-                 t = t,
-                 s = s,
-                 d = d,
-                 u = u,
-                 v = v)
-
-  # save these as the first instance of pwp_output
+  ts <- 0
+  pwp_in <- mget(c("ts","t","s","d","u","v"))
   pwp_output <- pwp_in
 
   # set up list of params to pass to pwpgo
@@ -138,7 +132,9 @@ pwpgo <- function(pwp_in, params, m) {
   # ------------------------------------------------------------
   # Unpack variable lists into function environment
   # Does the same thing as the global calls in MATLAB scripts
+  pwp_names <- names(pwp_in)
   list2env(pwp_in, env = environment())
+  param_names <- names(params)
   list2env(params, env = environment())
 
   # Apply heat and fresh water fluxes to the top most grid cell
@@ -153,6 +149,9 @@ pwpgo <- function(pwp_in, params, m) {
   d <- oce::swSigma(s,t, p=0)
 
   # remove_si ? function was here
+  pwp_int <- mget(pwp_names)
+  pwp_int <- remove_si(pwp_int)
+  list2env(pwp_int, env = environment())
 
   # At this point the density profile should be statically stable
 
@@ -170,8 +169,7 @@ pwpgo <- function(pwp_in, params, m) {
   ang <- -f * dt / 2
 
   uv <- rot(u,v,ang)
-  u <- uv$u
-  v <- uv$v
+  list2env(uv, env = environment())
 
   # Apply the wind stress to the mixed layer as it now exists
 
@@ -192,35 +190,28 @@ pwpgo <- function(pwp_in, params, m) {
   # Rotate another half time step
   # NEED TO CREATE OUTPUT FROM THIS FUNCTION
   uv <- rot(u,v,ang)
-  u <- uv$u
-  v <- uv$v
+  list2env(uv, env = environment())
 
   # Finished with the momentum equation for this time step
+
+  pwp_int <- mget(pwp_names)
+  params$ml_index <- ml_index
 
   # Do the bulk Richardson number instability form of mixing (as in PWP)
 
   # ADD ALL VARIABLES TO bulk_mix function definition
   if (rb > 1E-5){
-    bm <- bulk_mix(ml_index, rb, nz, z, d, u, v, g, t, s)
-    t <- bm$t
-    s <- bm$s
-    d <- bm$d
-    u <- bm$u
-    v <- bm$v
+    pwp_int <- bulk_mix(pwp_int, params)
   }
 
   # Do the gradient Richardson number instability form of mixing
 
   if (rg > 0){
-    gm <- grad_mix(rg, nz, d, u, v , g, dz, t, s)
-    t <- gm$t
-    s <- gm$s
-    d <- gm$d
-    u <- gm$u
-    v <- gm$v
+    pwp_int <- grad_mix(pwp_int, params)
   }
 
   # MAKE SURE WE ADD A RETURN FUNCTION
+  return(pwp_int)
 }
 
 # --------------------------------------------------------------
@@ -242,7 +233,12 @@ pwpgo <- function(pwp_in, params, m) {
 #' @export
 #'
 #' @examples
-bulk_mix <- function(ml_index, rb, nz, z, d, u, v, g, t, s) {
+bulk_mix <- function(pwp_int, params) {
+
+  pwp_names <- names(pwp_int)
+  list2env(pwp_int, env = environment())
+  list2env(params, env = environment())
+
   rvc <- rb
   for (j in (ml_index+1):nz){
     h <- z[j]
@@ -257,14 +253,11 @@ bulk_mix <- function(ml_index, rb, nz, z, d, u, v, g, t, s) {
       break
     } else {
       mi <- mix5(j, t, s, d, u, v)
-      t <- mi$t
-      s <- mi$s
-      d <- mi$d
-      u <- mi$u
-      v <- mi$v
+      list2env(mi)
     }
   }
-  return(list(t=t, s=s, d=d, u=u, v=v))
+
+  return(mget(pwp_names))
 }
 
 # ----------------------------------------------------------------
@@ -285,7 +278,11 @@ bulk_mix <- function(ml_index, rb, nz, z, d, u, v, g, t, s) {
 #' @export
 #'
 #' @examples
-grad_mix <- function(rg, nz, d, u, v , g, dz, t, s){
+grad_mix <- function(pwp_int, params){
+
+  pwp_names <- names(pwp_int)
+  list2env(pwp_int, env = environment())
+  list2env(params, env = environment())
 
   # This function performs the gradient Richardson Number relaxation
   # by mixing adjacent cells just enough to bring them to a new
@@ -300,16 +297,16 @@ grad_mix <- function(rg, nz, d, u, v , g, dz, t, s){
 
   j1 <- 1
   j2 <- nz - 1
+  r <- rep(0,length(j1:j2)) #DONT KNOW IF TRANSLATED CORRECTLY FROM r = zeros(size(j1:j2))
 
-  while (1){
-    r <- rep(0,length(j1:j2)) #DONT KNOW IF TRANSLATED CORRECTLY FROM r = zeros(size(j1:j2))
+  while (TRUE) {
     for (j in j1:j2){
       if (j <= 0){
         keyboard
       }
       dd <- (d[j + 1] - d[j]) / d[j]
       dv <- (u[j + 1] - u[j])^2 + (v[j + 1] - v[j])^2
-      if (is.na(dv)){
+      if (dv == 0){
         r[j] <- Inf
       } else {
         r[j] <- g * dz * dd / dv
@@ -323,19 +320,15 @@ grad_mix <- function(rg, nz, d, u, v , g, dz, t, s){
     # Check to see whether the smallest r is critical or not
 
     if (rs > rc){
-      return(list(t=t, s=s, d=d, u=u, v=v))
+      break
     }
 
     # Mix the cells js and js+1 that had the smallest Richardson Number
 
     # MAKE SURE YOU CREATE AN OUTPUT FROM THE FUNCTION
     # LIKE WITH THE rot() FUNCTION
-    st <- stir(rc, r, j, s, t, d, u, v)
-    t <- st$t
-    s <- st$s
-    d <- st$d
-    u <- st$u
-    v <- st$v
+    st <- stir(rc, rs, js, s, t, d, u, v)
+    list2env(st, env = environment())
 
     # Recompute the Richardson Number over the part of the profile that has changed
 
@@ -348,6 +341,8 @@ grad_mix <- function(rg, nz, d, u, v , g, dz, t, s){
       j2 <- nz - 1
     }
   }
+
+  return(mget(pwp_names))
 
 }
 
@@ -368,7 +363,7 @@ grad_mix <- function(rg, nz, d, u, v , g, dz, t, s){
 #' @export
 #'
 #' @examples
-stir <- function(rc, r, j, s, t, d, u, v){
+stir <- function(rc, rs, js, s, t, d, u, v){
 
   # This subroutine mixes cells j and j+1 just enough so that
   # the Richardson Number after the mixing is brought up to
@@ -379,22 +374,22 @@ stir <- function(rc, r, j, s, t, d, u, v){
   # rnew <- 0.3 would be reasonable. If r were smaller, then a
   # larger value of rnew - rc is used to hasten convergence.
 
-  rcon <- 0.02 + (rc - r) / 2
+  rcon <- 0.02 + (rc - rs) / 2
   rnew <- rc + rcon / 5
-  f <- 1 - r / rnew
-  dt <- (t[j + 1] - t[j]) * f / 2
-  t[j + 1] <- t[j + 1] - dt[m]
-  t[j] <- t[j] + dt[m]
-  ds <- (s[j + 1] - s[j]) * f / 2
-  s[j + 1] <- s[j + 1] - ds[m]
-  s[j] <- s[j] + ds[m]
-  d[j:j + 1] <- oce::swSigma(s[j:j + 1], t[j:j + 1], p=0)
-  du <- (u[j +1] - u[j]) * f / 2
-  u[j + 1] <- u[j + 1] - du[m]
-  u[j] <- u[j] + du[m]
-  dv <- (v[j + 1] - v[j]) * f / 2
-  v[j +1] <- v[j + 1] - dv[m]
-  v[j] <- v[j] + dv[m]
+  f <- 1 - rs / rnew
+  dt <- (t[js + 1] - t[js]) * f / 2
+  t[js + 1] <- t[js + 1] - dt
+  t[js] <- t[js] + dt
+  ds <- (s[js + 1] - s[js]) * f / 2
+  s[js + 1] <- s[js + 1] - ds
+  s[js] <- s[js] + ds
+  d[js:(js + 1)] <- oce::swSigma(s[js:(js + 1)], t[js:(js + 1)], p = 0)
+  du <- (u[js +1] - u[js]) * f / 2
+  u[js + 1] <- u[js + 1] - du
+  u[js] <- u[js] + du
+  dv <- (v[js + 1] - v[js]) * f / 2
+  v[js +1] <- v[js + 1] - dv
+  v[js] <- v[js] + dv
 
   return(list(t = t, s = s, d = d, u = u, v = v))
 }
@@ -464,21 +459,25 @@ rot <- function(u,v,ang){
 #' @export
 #'
 #' @examples
-remove_si <- function(t, s, d, u, v){
+remove_si <- function(pwp_int){
 
   # Find and relieve static instability that may occur in the
   # density array d. This simulates free convection.
   # ml_index is the index of the depth of the surface mixed layer
   # after adjustment
+  pwp_names <- names(pwp_int)
+  list2env(pwp_int, env = environment())
 
   while (1){
-    ml_index <- min(which(diff(d) < 0))
-    if (is.empty.model(ml_index)){
+    mli <- which(diff(d) < 0)
+    if(length(mli) == 0) {
       break
     }
-    mix5(ml_index + 1)
+    ml_index <- min(mli)
+    a <- mix5(ml_index + 1, t, s , d, u, v)
+    list2env(a,envir = environment())
   }
-  return(list(t=t, s=s, d=d, u=u, v=v))
+  return(mget(pwp_names))
 }
 
 # ---------------------------------------------------------------

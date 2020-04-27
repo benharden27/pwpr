@@ -1,4 +1,4 @@
-met_input_file <- "inst/extdata/met_input_file_test.csv"
+met_input_file <- "inst/extdata/met_input_file_test_2.csv"
 profile_input_file <- "inst/extdata/profile_input_file_test.csv"
 dt = 900
 dz = 10
@@ -72,14 +72,8 @@ if (dstab > 0.5){
 }
 
 # Define the variables to be passes into pwp routine that will change at each time step
-pwp_in <- list(time = 0,
-               t = t,
-               s = s,
-               d = d,
-               u = u,
-               v = v)
-
-# save these as the first instance of pwp_output
+ts <- 0
+pwp_in <- mget(c("ts","t","s","d","u","v"))
 pwp_output <- pwp_in
 
 # set up list of params to pass to pwpgo
@@ -91,4 +85,27 @@ defined_vars <- defined_vars[!(defined_vars %in% names(pwp_in))]
 params <- mget(defined_vars)
 
 m<-1
+
+vars <- ls()
+vars <- vars[!(vars %in% c("pwp_in","params", "m"))]
+rm(list = c(vars,"vars"))
+
+pwp_output <- pwp_in
+
+for (m in 1:params$nmet) {
+
+  pwp_in <- pwpgo(pwp_in,params, m)
+
+  if (m %% params$dt_save == 0) {
+    pwp_output$time <- append(pwp_output$time, pwp_in$time)
+    pwp_output$t <-  cbind(pwp_output$t, pwp_in$t)
+    pwp_output$s <-  cbind(pwp_output$s, pwp_in$s)
+    pwp_output$d <-  cbind(pwp_output$d, pwp_in$d)
+    pwp_output$u <-  cbind(pwp_output$u, pwp_in$u)
+    pwp_output$v <-  cbind(pwp_output$v, pwp_in$v)
+  }
+
+
+}
+
 

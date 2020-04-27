@@ -4,7 +4,7 @@
 \alias{remove_si}
 \title{remove_si}
 \usage{
-remove_si(t, s, d, u, v)
+remove_si(pwp_int)
 }
 \arguments{
 \item{v}{}

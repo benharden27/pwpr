@@ -4,7 +4,7 @@
 \alias{stir}
 \title{stir}
 \usage{
-stir(rc, r, j, s, t, d, u, v)
+stir(rc, rs, js, s, t, d, u, v)
 }
 \arguments{
 \item{v}{}

@@ -4,7 +4,7 @@
 \alias{grad_mix}
 \title{grad_mix}
 \usage{
-grad_mix(rg, nz, d, u, v, g, dz, t, s)
+grad_mix(pwp_int, params)
 }
 \arguments{
 \item{s}{}

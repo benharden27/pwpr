@@ -4,7 +4,7 @@
 \alias{bulk_mix}
 \title{bulk_mix}
 \usage{
-bulk_mix(ml_index, rb, nz, z, d, u, v, g, t, s)
+bulk_mix(pwp_int, params)
 }
 \arguments{
 \item{ml_index}{the index of the depth of the surface mixed layer after adjustment}
