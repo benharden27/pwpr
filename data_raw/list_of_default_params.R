@@ -1,8 +1,12 @@
+library(pwpr)
+
+rm(list=ls())
+
 met_input_file <- "inst/extdata/met_input_file_test_2.csv"
 profile_input_file <- "inst/extdata/profile_input_file_test.csv"
 dt = 900
 dz = 10
-days = 300
+days = 30
 depth = 1000
 dt_save = 4
 lat = 60
@@ -108,4 +112,5 @@ for (m in 1:params$nmet) {
 
 }
 
+oce::imagep(t(pwp_output$t), ylim = c(100,0))
 
