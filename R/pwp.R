@@ -102,12 +102,12 @@ pwp <- function(met_input_file, profile_input_file,
     pwp_in <- pwpgo(pwp_in,params, m)
 
     if (m %% dt_save == 0) {
-      pwp_output$time <- append(pwp_output$time, pwp_out$time)
-      pwp_output$t <-  cbind(pwp_output$t, pwp_out$t)
-      pwp_output$s <-  cbind(pwp_output$s, pwp_out$s)
-      pwp_output$d <-  cbind(pwp_output$d, pwp_out$d)
-      pwp_output$u <-  cbind(pwp_output$u, pwp_out$u)
-      pwp_output$v <-  cbind(pwp_output$v, pwp_out$v)
+      pwp_output$time <- append(pwp_output$time, pwp_in$time)
+      pwp_output$t <-  cbind(pwp_output$t, pwp_in$t)
+      pwp_output$s <-  cbind(pwp_output$s, pwp_in$s)
+      pwp_output$d <-  cbind(pwp_output$d, pwp_in$d)
+      pwp_output$u <-  cbind(pwp_output$u, pwp_in$u)
+      pwp_output$v <-  cbind(pwp_output$v, pwp_in$v)
     }
 
 
