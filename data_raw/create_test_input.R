@@ -7,13 +7,13 @@ library(seapacific)
 # t is in days
 nx = 100
 df <- tibble(time = seq(0,nx-1,1),
-                 sw = runif(100,0,100),
-                 lw = runif(100,0,100),
-                 qlat = runif(100,0,100),
-                 qsens = runif(100,0,100),
-                 tx = runif(100,0,1),
-                 ty = runif(100,0,1),
-                 precip = runif(100,0,1)
+                 sw = runif(100,0,50),
+                 lw = runif(100,0,30),
+                 qlat = runif(100,0,20),
+                 qsens = runif(100,0,20),
+                 tx = runif(100,0,5e-2),
+                 ty = runif(100,0,5e-2),
+                 precip = runif(100,0,1e-8)
                  )
 
 write_csv(df, "inst/extdata/met_input_file_test.csv")
@@ -29,6 +29,19 @@ df <- tibble(time = seq(0,nx-1,1),
 )
 
 write_csv(df, "inst/extdata/met_input_file_test_2.csv")
+
+df <- tibble(time = seq(0,nx-1,1),
+             sw = 0,
+             lw = 50,
+             qlat = 0,
+             qsens = 0,
+             tx = 0,
+             ty = 0,
+             precip = 0
+)
+
+write_csv(df, "inst/extdata/met_input_file_test_2.csv")
+
 
 
 # Profile CSV -------------------------------------------------------------

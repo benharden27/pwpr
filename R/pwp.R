@@ -132,10 +132,13 @@ pwpgo <- function(pwp_in, params, m) {
   # ------------------------------------------------------------
   # Unpack variable lists into function environment
   # Does the same thing as the global calls in MATLAB scripts
+  #
+
   pwp_names <- names(pwp_in)
   list2env(pwp_in, env = environment())
   param_names <- names(params)
   list2env(params, env = environment())
+  print(paste("step ", m, " of ", nmet))
 
   # Apply heat and fresh water fluxes to the top most grid cell
   t[1] <- t[1] + (qi[m] * absrb[1] - qo[m]) * dt / (dz * d[1] * cpw)
