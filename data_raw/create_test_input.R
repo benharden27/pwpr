@@ -11,8 +11,8 @@ df <- tibble(time = seq(0,nx-1,1),
                  lw = runif(100,0,30),
                  qlat = runif(100,0,20),
                  qsens = runif(100,0,20),
-                 tx = runif(100,0,5e-2),
-                 ty = runif(100,0,5e-2),
+                 tx = runif(100,-5e-2,5e-2),
+                 ty = runif(100,-5e-2,5e-2),
                  precip = runif(100,0,1e-8)
                  )
 
@@ -30,8 +30,9 @@ df <- tibble(time = seq(0,nx-1,1),
 
 write_csv(df, "inst/extdata/met_input_file_test_2.csv")
 
+
 df <- tibble(time = seq(0,nx-1,1),
-             sw = 0,
+             sw = 50,
              lw = 50,
              qlat = 0,
              qsens = 0,
@@ -40,7 +41,7 @@ df <- tibble(time = seq(0,nx-1,1),
              precip = 0
 )
 
-write_csv(df, "inst/extdata/met_input_file_test_2.csv")
+write_csv(df, "inst/extdata/met_input_file_test_3.csv")
 
 
 
