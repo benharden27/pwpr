@@ -32,7 +32,8 @@ for (i in 1:dim(mooring[[1]])[1]) {
                     temp = moorctd[[i]]@data$temperature,
                     sal = moorctd[[i]]@data$salinity,
                     theta = swTheta(moorctd[[i]]),
-                    sigma = swSigmaTheta(moorctd[[i]]))
+                    sigma = swSigmaTheta(moorctd[[i]]),
+                    station = i)
   if (i == 1) {
     moor <- mooradd
   } else {
