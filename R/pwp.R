@@ -63,7 +63,7 @@ pwp <- function(met_input_file, profile_input_file,
 
   t <- approx(prof$z, prof$t, z, rule = 2)$y
   s <- approx(prof$z, prof$s, z, rule = 2)$y
-  d <- oce::swSigma(s, t, p = 0)
+  d <- oce::swSigma(s, t, p = 0) + 1000
 
   # Initialize additional profile variables at dz resolutions
 
@@ -102,7 +102,7 @@ pwp <- function(met_input_file, profile_input_file,
     pwp_in <- pwpgo(pwp_in,params, m)
 
     if (m %% dt_save == 0) {
-      pwp_output$time <- append(pwp_output$time, pwp_in$time)
+      pwp_output$ts <- append(pwp_output$ts, m*dt/60/60/24)
       pwp_output$t <-  cbind(pwp_output$t, pwp_in$t)
       pwp_output$s <-  cbind(pwp_output$s, pwp_in$s)
       pwp_output$d <-  cbind(pwp_output$d, pwp_in$d)
@@ -113,7 +113,7 @@ pwp <- function(met_input_file, profile_input_file,
 
   }
 
-  return(pwp_output)
+  return(list(pwp_output = pwp_output,params = params))
 
   }
 
@@ -134,11 +134,13 @@ pwpgo <- function(pwp_in, params, m) {
   # Does the same thing as the global calls in MATLAB scripts
   #
 
+
   pwp_names <- names(pwp_in)
   list2env(pwp_in, env = environment())
   param_names <- names(params)
   list2env(params, env = environment())
   print(paste("step ", m, " of ", nmet))
+
 
   # Apply heat and fresh water fluxes to the top most grid cell
   t[1] <- t[1] + (qi[m] * absrb[1] - qo[m]) * dt / (dz * d[1] * cpw)
@@ -149,7 +151,7 @@ pwpgo <- function(pwp_in, params, m) {
 
   # Compute the density, and relieve static instability, if it occurs
 
-  d <- oce::swSigma(s,t, p=0)
+  d <- oce::swSigma(s,t, p=0) + 1000
 
   # remove_si ? function was here
   pwp_int <- mget(pwp_names)
@@ -196,7 +198,7 @@ pwpgo <- function(pwp_in, params, m) {
   list2env(uv, env = environment())
 
   # Finished with the momentum equation for this time step
-
+  # move time along
   pwp_int <- mget(pwp_names)
   params$ml_index <- ml_index
 
@@ -386,7 +388,7 @@ stir <- function(rc, rs, js, s, t, d, u, v){
   ds <- (s[js + 1] - s[js]) * f / 2
   s[js + 1] <- s[js + 1] - ds
   s[js] <- s[js] + ds
-  d[js:(js + 1)] <- oce::swSigma(s[js:(js + 1)], t[js:(js + 1)], p = 0)
+  d[js:(js + 1)] <- oce::swSigma(s[js:(js + 1)], t[js:(js + 1)], p = 0) + 1000
   du <- (u[js +1] - u[js]) * f / 2
   u[js + 1] <- u[js + 1] - du
   u[js] <- u[js] + du
@@ -418,7 +420,7 @@ mix5 <- function(j, t, s , d, u, v){
 
   t[1:j] <- mean(t[1:j])
   s[1:j] <- mean(s[1:j])
-  d[1:j] <- oce::swSigma(s[1:j], t[1:j], p=0)
+  d[1:j] <- oce::swSigma(s[1:j], t[1:j], p=0) + 1000
   u[1:j] <- mean(u[1:j])
   v[1:j] <- mean(v[1:j])
 
@@ -507,13 +509,14 @@ absorb <- function(beta1, beta2, nz, dz){
   rs1 <- 0.6
   rs2 <- 1.0 - rs1
   absrb <- rep(0,nz)
-  z1 <- 0:(nz-1) * dz
+  z1 <- (0:(nz-1)) * dz
   z2 <- z1 + dz
   z1b1 <- z1 / beta1
   z2b1 <- z2 / beta1
   z1b2 <- z1 / beta2
   z2b2 <- z2 / beta2
-  absrb <- (rs1 * (exp(-z1b1) - exp(-z2b1) + rs2 * (exp(-z1b2) - exp(-z2b2))))
+  absrb <- rs1 * (exp(-z1b1) - exp(-z2b1)) + rs2 * (exp(-z1b2) - exp(-z2b2))
+  return(absrb)
 }
 
 
