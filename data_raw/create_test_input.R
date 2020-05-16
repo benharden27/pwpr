@@ -20,7 +20,7 @@ write_csv(df, "inst/extdata/met_input_file_test.csv")
 
 df <- tibble(time = seq(0,nx-1,1),
              sw = 0,
-             lw = 50,
+             lw = 200,
              qlat = 0,
              qsens = 0,
              tx = 0,
@@ -28,12 +28,25 @@ df <- tibble(time = seq(0,nx-1,1),
              precip = 0
 )
 
-write_csv(df, "inst/extdata/met_input_file_test_2.csv")
+write_csv(df, "inst/extdata/met_input_lw_50.csv")
 
 
 df <- tibble(time = seq(0,nx-1,1),
-             sw = 50,
-             lw = 50,
+             sw = 0,
+             lw = 10,
+             qlat = 0,
+             qsens = 0,
+             tx = 2,
+             ty = 0,
+             precip = 0
+)
+
+write_csv(df, "inst/extdata/met_input_tx_1.csv")
+
+
+df <- tibble(time = seq(0,nx-1,1),
+             sw = 100,
+             lw = 0,
              qlat = 0,
              qsens = 0,
              tx = 0,
@@ -41,7 +54,8 @@ df <- tibble(time = seq(0,nx-1,1),
              precip = 0
 )
 
-write_csv(df, "inst/extdata/met_input_file_test_3.csv")
+write_csv(df, "inst/extdata/met_input_tx_1.csv")
+
 
 
 
@@ -51,5 +65,9 @@ df <- tibble(z = S285$ctd[[10]]@data$depth,
              t = S285$ctd[[10]]@data$temperature,
              s = S285$ctd[[10]]@data$salinity)
 df <- df[6:nrow(df),]
+
+df <- mutate(df, d = oce::swSigma(s,t,p=0)) %>%
+  arrange(d) %>%
+  mutate(z = sort(z))
 
 write_csv(df, "inst/extdata/profile_input_file_test.csv")
